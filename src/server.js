@@ -5,6 +5,7 @@ const connectDB = require("./db");
 const authRouter = require("./routes/auth.routes");
 const userRouter = require("./routes/user.routes");
 const chatsRouter = require("./routes/chats.routes");
+const messageRouter = require("./routes/message.routes");
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/chats", chatsRouter);
+app.use("/api/v1/message", messageRouter);
 
 app.get("/api", (req, res) => {
     res.header(200).send("<h1>Chatly : Real Time Chat Application");

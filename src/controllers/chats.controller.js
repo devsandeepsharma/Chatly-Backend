@@ -7,7 +7,7 @@ const fetchChats = async (req, res) => {
         const chats = await Chat.find({ users: req.user._id })
             .populate("users", "username email avatar")
             .populate("groupAdmin", "username email avatar")
-            .populate("lastMessage")
+            .populate("latestMessage")
             .sort({ updatedAt: -1 }); 
 
         return successResponse(res, "Chats fetched successfully", { chats });
@@ -27,7 +27,7 @@ const accessChat = async (req, res) => {
         let chat = await Chat.findOne({
             isGroupChat: false,
             users: { $all: [req.user._id, userId] },
-        }).populate("users", "username email avatar").populate("lastMessage")
+        }).populate("users", "username email avatar").populate("latestMessage")
 
         if (chat) {
             return successResponse(res, "Chat fetched successfully", { chat });

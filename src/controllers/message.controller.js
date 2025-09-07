@@ -5,7 +5,7 @@ const { errorResponse, successResponse } = require("../utils/responseHandler")
 
 const fetchMessages = async (req, res) => {
     try {
-        const chatId = req.body?.chatId;
+        const chatId = req.query?.chatId;
 
         if (!chatId) return errorResponse(res, "chatId is required", 400);
 

@@ -5,8 +5,8 @@ const { errorResponse, successResponse } = require("../utils/responseHandler");
 const fetchChats = async (req, res) => {
     try {
         const chats = await Chat.find({ users: req.user._id })
-            .populate("users", "username email avatar")
-            .populate("groupAdmin", "username email avatar")
+            .populate("users", "username email avatar bio")
+            .populate("groupAdmin", "username email avatar bio")
             .populate("latestMessage")
             .sort({ updatedAt: -1 }); 
 

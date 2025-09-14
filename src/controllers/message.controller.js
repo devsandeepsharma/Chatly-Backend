@@ -11,7 +11,7 @@ const fetchMessages = async (req, res) => {
 
         let messages = await Message.find({ chat: chatId })
             .populate("sender", "username email avatar")
-            .sort({ createdAt: -1 })
+            .sort({ createdAt: 1 })
 
         return successResponse(res, "Messages fetched successfully", { messages });
     } catch (error) {

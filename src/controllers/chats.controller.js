@@ -41,7 +41,7 @@ const accessChat = async (req, res) => {
 
         chat = await Chat.findById(newChat._id).populate(
             "users",
-            "username email avatar"
+            "username email avatar bio"
         );
 
         return successResponse(res, "New chat created", { chat });
@@ -62,12 +62,21 @@ const createGroupChat = async (req, res) => {
 
         const groupUsers = [...users, req.user._id];
 
+        const existingGroup = await Chat.findOne({
+            isGroupChat: true,
+            users: { $all: groupUsers, $size: groupUsers.length }
+        });
+
+        if (existingGroup) {
+            return errorResponse(res, "A group with these users already exists", 400);
+        }
+
         const chat = await Chat.create({
             chatName: name,
             isGroupChat: true,
             users: groupUsers,
             groupAdmin: req.user._id,
-            avatar: avatar || "",
+            chatAvatar: avatar || "",
         });
 
         const fullChat = await Chat.findById(chat._id)
@@ -97,7 +106,7 @@ const updateGroupDetails = async (req, res) => {
         }
 
         if (name) chat.chatName = name;
-        if (avatar) chat.avatar = avatar;
+        if (avatar) chat.chatAvatar = avatar;
         if (chatDescription) chat.chatDescription = chatDescription;
 
         await chat.save();

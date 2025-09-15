@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Chat = require("../models/chat.model");
 const Message = require("../models/message.model");
 
@@ -35,6 +36,7 @@ const sendMessage = async (req, res) => {
             sender: req.user._id,
             content,
             chat: chatId,
+            readBy: [req.user._id]
         });
 
         chat.latestMessage = message._id;
@@ -83,8 +85,54 @@ const deleteMessage = async (req, res) => {
     }
 }
 
+const markMessagesAsRead = async (req, res) => {
+    try {
+        const chatId = req.body?.chatId;
+
+        if (!chatId) {
+            return errorResponse(res, "chatId is required", 400);
+        }
+
+        await Message.updateMany(
+            { chat: chatId, readBy: { $ne: req.user._id } },
+            { $push: { readBy: req.user._id } }
+        );
+
+        const updatedMessages = await Message.find({ chat: chatId })
+            .populate("sender", "username email avatar")
+            .populate("chat")
+
+        return successResponse(res, "Messages marked as read successfully", { messages: updatedMessages });
+    } catch (error) {
+        return errorResponse(res, "Failed to mark messages as read");
+    }
+};
+
+const fetchUnreadChats = async (req, res) => {
+    try {
+        const userId = new mongoose.Types.ObjectId(req.user._id);
+
+        const agg = await Message.aggregate([
+            { $match: { readBy: { $ne: userId } } },
+            { $group: { _id: "$chat", count: { $sum: 1 } } }
+        ]);
+
+        const unreadMap = {};
+        agg.forEach(item => {
+            unreadMap[item._id.toString()] = item.count;
+        });
+
+        return successResponse(res, "Unread chats fetched successfully", { unread: unreadMap });
+    } catch (error) {
+        console.error("fetchUnreadChats error:", error);
+        return errorResponse(res, "Failed to fetch unread chats");
+    }
+};
+
 module.exports = {
     fetchMessages,
     sendMessage,
-    deleteMessage
+    deleteMessage,
+    markMessagesAsRead,
+    fetchUnreadChats
 };

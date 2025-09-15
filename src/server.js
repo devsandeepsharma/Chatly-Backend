@@ -59,6 +59,14 @@ io.on("connection", (socket) => {
         io.to(message.chat._id).emit("receiveMessage", message);
     });
 
+    socket.on("typing", ({ chatId, userId }) => {
+        socket.to(chatId).emit("typing", { userId });
+    });
+
+    socket.on("stopTyping", ({ chatId, userId }) => {
+        socket.to(chatId).emit("stopTyping", { userId });
+    });
+
     socket.on("disconnect", () => {
         console.log("Socket disconnected:", socket.id);
     });

@@ -10,6 +10,7 @@ const userRouter = require("./routes/user.routes");
 const chatsRouter = require("./routes/chats.routes");
 const messageRouter = require("./routes/message.routes");
 const { allowedOrigins } = require("./utils/allowedOrigins");
+const User = require("./models/user.model");
 
 dotenv.config();
 
@@ -48,6 +49,12 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
     console.log("Connected to socket.io:", socket.id);
 
+    socket.on("userOnline", async (userId) => {
+        socket.userId = userId;
+        await User.findByIdAndUpdate(userId, { isOnline: true });
+        io.emit("updateUserStatus", { userId, isOnline: true });
+    });
+
     socket.on("joinChat", (chatId) => {
         socket.join(chatId);
         console.log(`User ${socket.id} joined chat ${chatId}`);
@@ -67,7 +74,11 @@ io.on("connection", (socket) => {
         socket.to(chatId).emit("stopTyping", { userId });
     });
 
-    socket.on("disconnect", () => {
+    socket.on("disconnect", async () => {
+        if (socket.userId) {
+            await User.findByIdAndUpdate(socket.userId, { isOnline: false });
+            io.emit("updateUserStatus", { userId: socket.userId, isOnline: false });
+        }
         console.log("Socket disconnected:", socket.id);
     });
 });

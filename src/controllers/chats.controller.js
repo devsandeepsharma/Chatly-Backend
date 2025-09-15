@@ -5,7 +5,7 @@ const { errorResponse, successResponse } = require("../utils/responseHandler");
 const fetchChats = async (req, res) => {
     try {
         const chats = await Chat.find({ users: req.user._id })
-            .populate("users", "username email avatar bio")
+            .populate("users", "username email avatar bio isOnline")
             .populate("groupAdmin", "username email avatar bio")
             .populate("latestMessage")
             .sort({ updatedAt: -1 }); 
@@ -27,7 +27,7 @@ const accessChat = async (req, res) => {
         let chat = await Chat.findOne({
             isGroupChat: false,
             users: { $all: [req.user._id, userId] },
-        }).populate("users", "username email avatar").populate("latestMessage")
+        }).populate("users", "username email avatar bio isOnline").populate("latestMessage")
 
         if (chat) {
             return successResponse(res, "Chat fetched successfully", { chat });
@@ -41,7 +41,7 @@ const accessChat = async (req, res) => {
 
         chat = await Chat.findById(newChat._id).populate(
             "users",
-            "username email avatar bio"
+            "username email avatar bio isOnline"
         );
 
         return successResponse(res, "New chat created", { chat });

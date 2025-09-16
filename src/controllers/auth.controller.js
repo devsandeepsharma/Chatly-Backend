@@ -4,6 +4,7 @@ const User = require("../models/user.model");
 const generateOTP = require("../utils/generateOTP");
 const generateToken = require("../utils/generateToken");
 const { errorResponse, successResponse } = require("../utils/responseHandler");
+const { sendEmail } = require("../utils/sendEmail");
 
 const sendOTP = async (req, res) => {
     try {
@@ -19,10 +20,11 @@ const sendOTP = async (req, res) => {
             { upsert: true, new: true }
         );
 
-        // Send OTP Email
+        await sendEmail(email, otp);
 
         return successResponse(res, "OTP sent successfully", { email, otp });
     } catch (error) {
+        console.log(error)
         return errorResponse(res, "Failed to send OTP");
     }
 }
@@ -86,6 +88,7 @@ const guestLogin = async (req, res) => {
                 { 
                     email: "guest@gmail.com", 
                     username: "Guest User",
+                    avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=random",
                     isGuest: true
                 }
             );
